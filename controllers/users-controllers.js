@@ -14,7 +14,7 @@ const getUsers = async (req, res, next) => {
     );
     return next(error);
   }
-  req.json({ users: users.map((user) => user.toObject({ getters: true })) });
+  res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
 const signup = async (req, res, next) => {
@@ -26,12 +26,12 @@ const signup = async (req, res, next) => {
   }
   const { name, email, password } = req.body;
 
-  let exisitngUser;
+  let existingUser;
   try {
-    const exisitngUser = await User.findOne({ email: email });
+    existingUser = await User.findOne({ email: email });
   } catch (err) {
     const error = new HttpError(
-      "Signing up failed, please try again later",
+      "Signing up failed, please try again later.",
       500
     );
     return next(error);
@@ -39,7 +39,7 @@ const signup = async (req, res, next) => {
 
   if (existingUser) {
     const error = new HttpError(
-      "User exists already, please login instead",
+      "User exists already, please login instead.",
       422
     );
     return next(error);
@@ -48,16 +48,18 @@ const signup = async (req, res, next) => {
   const createdUser = new User({
     name,
     email,
-    image:
-      "https://en.wikipedia.org/wiki/Empire_State_Building#/media/File:Empire_State_Building_(aerial_view).jpg",
+    image: "https://live.staticflickr.com/7631/26849088292_36fc52ee90_b.jpg",
     password,
     places: [],
   });
 
   try {
-    await createUser.save();
+    await createdUser.save();
   } catch (err) {
-    const error = new HttpError("Signing up failed, please try again", 500);
+    const error = new HttpError(
+      "Signing up failed, please try again later.",
+      500
+    );
     return next(error);
   }
 
@@ -67,13 +69,13 @@ const signup = async (req, res, next) => {
 const login = async (req, res, next) => {
   const { email, password } = req.body;
 
-  let exisitngUser;
+  let existingUser;
 
   try {
-    const exisitngUser = await User.findOne({ email: email });
+    existingUser = await User.findOne({ email: email });
   } catch (err) {
     const error = new HttpError(
-      "Logging in failed, please try again later",
+      "Loggin in failed, please try again later.",
       500
     );
     return next(error);
@@ -87,7 +89,10 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-  res.json({ message: "Logged in!" });
+  res.json({
+    message: "Logged in!",
+    user: existingUser.toObject({ getters: true }),
+  });
 };
 
 exports.getUsers = getUsers;
